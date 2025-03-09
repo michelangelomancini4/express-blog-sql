@@ -57,7 +57,7 @@ app.use(express.static('public'));
 
 // impostazione rotta principale
 app.get('/', (req, res) => {
-    res.send('Server del tuo blog!!!')
+    res.send('Server del tuo blog sql !!!')
 })
 
 // rotta per la bacheca

@@ -8,8 +8,14 @@ const connection = require('../data/db');
 // logica INDEX
 function index(req, res) {
 
-    res.json(menu)
-}
+    const sql = 'SELECT * FROM posts';
+
+    // eseguiamo la query!
+    connection.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: 'Database query failed' });
+        res.json(results);
+    })
+};
 
 // logica  SHOW
 function show(req, res) {
@@ -97,20 +103,11 @@ function destroy(req, res) {
     // conversione ID da stringa a numero con parseInt
     const id = parseInt(req.params.id)
 
-    // cerchiamo il piatto tramite id
-    const piatto = menu.find(piatto => piatto.id === id);
-
-    // Facciamo il controllo
-    if (!piatto) {
-        //Imposto lo status 404
-        res.status(404)
-        // Restituisco un JSON con le altre informazioni
-        return res.json({
-            error: "Non Trovato",
-            message: "Piatto non trovato"
-        })
-    }
-    res.json(piatto);
+    //Eliminiamo il post dal menu
+    connection.query('DELETE FROM posts WHERE id = ?', [id], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to delete pizza' });
+        res.sendStatus(204)
+    });
 
 }
 
