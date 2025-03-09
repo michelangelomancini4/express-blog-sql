@@ -10,7 +10,7 @@ function index(req, res) {
 
     const sql = 'SELECT * FROM posts';
 
-    // eseguiamo la query!
+    // eseguo la query
     connection.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: 'Database query failed' });
         res.json(results);
@@ -22,10 +22,35 @@ function show(req, res) {
 
     const id = parseInt(req.params.id)
 
-    // cerchiamo il piatto tramite id
-    const piatto = menu.find(piatto => piatto.id === id);
-    // Restituiamolo sotto forma di JSON
-    res.json(piatto);
+    // preparo la query 
+    const postSql = 'SELECT * FROM posts WHERE id = ?';
+
+    // Preparo la query per gli ingredienti con dati del presi dal database
+    const ingredientsSql = `
+    SELECT tags.label
+    FROM tags 
+    JOIN post_tag  ON tags.id = post_tag.tag_id
+    WHERE post_tag.post_id = ?
+    `;
+    // Eseguo la prima query 
+
+    connection.query(postSql, [id], (err, postResults) => {
+
+        if (err) return res.status(500).json({ error: 'Database query failed' });
+        if (postResults.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+        // Recupero il post
+        const post = postResults[0];
+
+        // Se è andata bene, eseguo la seconda query per gli ingredienti
+        connection.query(ingredientsSql, [id], (err, ingredientsResults) => {
+            if (err) return res.status(500).json({ error: 'Database query failed' });
+
+            // Aggiungo gli ingredienti al post
+            post.ingredients = ingredientsResults;
+            res.json(post);
+        });
+    });
 
 }
 
